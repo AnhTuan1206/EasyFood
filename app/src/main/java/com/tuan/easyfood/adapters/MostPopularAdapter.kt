@@ -8,12 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.tuan.easyfood.databinding.PopularItemsBinding
 import com.tuan.easyfood.pojo.CategoryMeal
+import com.tuan.easyfood.pojo.MealByCategoryList
 import com.tuan.easyfood.pojo.MealList
 import java.net.URL
 
 class MostPopularAdapter(): RecyclerView.Adapter<MostPopularAdapter.PopularMealViewHolder>() {
 
-     var mealClick: ((CategoryMeal) -> Unit)? = null
+    var mealClick: ((CategoryMeal) -> Unit)? = null
+    var onLongItemClick: ((CategoryMeal) -> Unit)? = null
     private lateinit var mealList: ArrayList<CategoryMeal>
 
     fun setAdapter(mealList: ArrayList<CategoryMeal>) {
@@ -43,6 +45,10 @@ class MostPopularAdapter(): RecyclerView.Adapter<MostPopularAdapter.PopularMealV
         holder.bind(holder.itemView, mealList[position].strMealThumb.toString())
         holder.itemView.setOnClickListener {
             mealClick?.invoke(mealList[position])
+        }
+        holder.itemView.setOnLongClickListener {
+            onLongItemClick?.invoke(mealList[position])
+            true
         }
     }
 }

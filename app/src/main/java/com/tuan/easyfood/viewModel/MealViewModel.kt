@@ -1,67 +1,59 @@
 package com.tuan.easyfood.viewModel
 
+import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.tuan.easyfood.pojo.CategoryMeal
+import androidx.lifecycle.viewModelScope
+import androidx.room.PrimaryKey
+import com.tuan.easyfood.db.MealDatabase
 import com.tuan.easyfood.pojo.Meal
-import com.tuan.easyfood.pojo.MealByCategoryList
 import com.tuan.easyfood.pojo.MealList
+import com.tuan.easyfood.repository.MealRepository
 import com.tuan.easyfood.retrofit.MealApi
 import com.tuan.easyfood.retrofit.RetrofitInstance
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MealViewModel(private var mealApi: MealApi = RetrofitInstance.api().create(MealApi::class.java)): ViewModel() {
+class MealViewModel(
+    private val mealRepository: MealRepository,
+): ViewModel() {
+
 
     private var mealLiveData = MutableLiveData<Meal>()
-    private var categoryMealLiveData = MutableLiveData<List<CategoryMeal>>()
+    private var mealListLiveData = MutableLiveData<List<Meal>>()
 
-    fun getMealDetail(id: String): LiveData<Meal> {
-        mealApi.getMealDetail(id).enqueue(object : Callback<MealList> {
-            override fun onResponse(call: Call<MealList>, response: Response<MealList>) {
-                if (response.body() != null) {
-                    mealLiveData.value = response.body()!!.meals?.get(0)
-                } else return
-            }
-
-            override fun onFailure(call: Call<MealList>, t: Throwable) {
-                return
-            }
-        })
+     fun getMealDetail(id: String): LiveData<Meal> {
+         mealLiveData = mealRepository.getMealDetail(id)
         return mealLiveData
     }
 
     fun getRandomMeal(): LiveData<Meal> {
-        mealApi.getRandomMeal().enqueue(object : Callback<MealList> {
-            override fun onResponse(call: Call<MealList>, response: Response<MealList>) {
-                if (response.body() != null) {
-                    mealLiveData.value = response.body()!!.meals?.get(0)
-                } else return
-            }
-
-            override fun onFailure(call: Call<MealList>, response: Throwable) {
-                return
-            }
-        })
+        mealLiveData = mealRepository.getRandomMeal()
         return mealLiveData
     }
 
-    fun getAllMealInCategory(categoryName: String = "Seafood"): LiveData<List<CategoryMeal>> {
-        mealApi.getAllMealInCategory(categoryName).enqueue(object : Callback<MealByCategoryList> {
-            override fun onResponse(call: Call<MealByCategoryList>, response: Response<MealByCategoryList>) {
-                if (response.body() != null) {
-                    categoryMealLiveData.value = response.body()!!.meals!!
-                } else return
-            }
+     fun upsertMeal(meal: Meal) {
+        viewModelScope.launch {
+            mealRepository.upsertMeal(meal)
+        }
+    }
 
-            override fun onFailure(call: Call<MealByCategoryList>, response: Throwable) {
-                return
-            }
+     fun deleteMeal(meal: Meal) {
+        viewModelScope.launch {
+            mealRepository.deleteMeal(meal)
+        }
+    }
 
-        })
-        return categoryMealLiveData
+    fun searchMeal(searchQuery: String): MutableLiveData<List<Meal>> {
+        mealListLiveData = mealRepository.searchMeal(searchQuery)
+        return mealListLiveData
+    }
 
+    fun getAllFavoriteMeal(): LiveData<List<Meal>>{
+        return mealRepository.getAllFavoriteMeal()
     }
 }

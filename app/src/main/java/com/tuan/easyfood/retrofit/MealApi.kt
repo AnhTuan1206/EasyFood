@@ -14,7 +14,7 @@ interface MealApi {
     @GET("lookup.php")
     fun getMealDetail(@Query("i") id: String):Call<MealList>
 
-    @GET("filter.php")
-    fun getAllMealInCategory(@Query("c") categoryName: String): Call<MealByCategoryList>
+    @GET("search.php")
+    fun searchMeal(@Query("s") searchQuery: String): Call<MealList>
 
 }

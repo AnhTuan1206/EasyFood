@@ -6,15 +6,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.tuan.easyfood.R
+import com.tuan.easyfood.activities.CategoryMealsActivity
+import com.tuan.easyfood.activities.MainActivity
 import com.tuan.easyfood.activities.MealActivity
 import com.tuan.easyfood.adapters.CategoryAdapter
 import com.tuan.easyfood.adapters.MostPopularAdapter
+import com.tuan.easyfood.constant.Constants.Companion.CATEGORY_NAME
 import com.tuan.easyfood.constant.Constants.Companion.MEAL_ID
 import com.tuan.easyfood.constant.Constants.Companion.MEAL_NAME
 import com.tuan.easyfood.constant.Constants.Companion.MEAL_THUMB
 import com.tuan.easyfood.databinding.FragmentHomeBinding
+import com.tuan.easyfood.fragments.bottomsheet.MealBottomSheetFragment
 import com.tuan.easyfood.pojo.Category
 import com.tuan.easyfood.pojo.CategoryMeal
 import com.tuan.easyfood.pojo.Meal
@@ -32,8 +37,7 @@ class HomeFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mealViewModel = ViewModelProvider(this)[MealViewModel::class.java]
-        categoryViewModel = ViewModelProvider(this)[CategoryViewModel::class.java]
+        init()
     }
 
     override fun onCreateView(
@@ -44,13 +48,19 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        popularAdapter = MostPopularAdapter()
-        categoryAdapter = CategoryAdapter()
         observerMeal()
         observerCategory()
         eventClick()
+    }
+
+    private fun init() {
+        popularAdapter = MostPopularAdapter()
+        categoryAdapter = CategoryAdapter()
+        mealViewModel = (activity as MainActivity).mealViewModel
+        categoryViewModel = (activity as MainActivity).categoryViewModel
     }
 
     private fun observerMeal() {
@@ -60,7 +70,7 @@ class HomeFragment : Fragment() {
             randomMeal = meal
         }
 
-        mealViewModel.getAllMealInCategory().observe(viewLifecycleOwner) {
+        categoryViewModel.getAllMealInCategorySeafood().observe(viewLifecycleOwner) {
             mealInCategory ->
             popularAdapter.setAdapter(mealInCategory as ArrayList<CategoryMeal>)
             binding.recViewMealsPopular.adapter = popularAdapter
@@ -94,7 +104,21 @@ class HomeFragment : Fragment() {
             }
             startActivity(intent)
         }
+
+        categoryAdapter.onItemClick = { category ->
+            val intent = Intent(activity, CategoryMealsActivity::class.java).apply {
+                putExtra(CATEGORY_NAME, category.strCategory)
+            }
+            startActivity(intent)
+        }
+
+        popularAdapter.onLongItemClick = { meal ->
+            val mealBottomSheetFragment = MealBottomSheetFragment.newInstance(meal.idMeal.toString())
+            mealBottomSheetFragment.show(childFragmentManager, "Meal Info")
+        }
+
+        binding.imgSearch.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
+        }
     }
-
-
 }

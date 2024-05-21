@@ -7,11 +7,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.tuan.easyfood.databinding.CategoryItemBinding
 import com.tuan.easyfood.pojo.Category
-import com.tuan.easyfood.pojo.CategoryList
 
 class CategoryAdapter(): RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
     private lateinit var categoryList: ArrayList<Category>
+    var onItemClick: ((Category) -> Unit)? = null
 
     fun setAdapter(categoryList: ArrayList<Category>) {
         this.categoryList = categoryList
@@ -39,5 +39,6 @@ class CategoryAdapter(): RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
         holder.bind(holder.itemView, categoryList[position].strCategoryThumb.toString(), categoryList[position])
+        holder.itemView.setOnClickListener { onItemClick!!.invoke(categoryList[position]) }
     }
 }
